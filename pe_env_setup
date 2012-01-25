@@ -1,0 +1,27 @@
+# Sets up environment for qlogin parallel job
+# since SGE can't/wont do this for us
+
+JOB=$(ps -p $PPID -o cmd= | awk '{ print $1 }' | cut -d'-' -f2)
+
+ENVFILE=/var/spool/gridengine/$(hostname -s)/active_jobs/${JOB}.1/environment
+
+OIFS=$IFS
+IFS=`echo -ne '\n\r'`
+
+for i in `cat $ENVFILE`; do
+	echo $i | grep ^PATH &> /dev/null && continue
+	echo $i | grep ^LD_LIBRARY_PATH &> /dev/null && continue
+	echo $i | grep ^DISPLAY &> /dev/null && continue
+
+	export $i
+done
+
+IFS=$OIFS
+
+NP=`awk -F'=' '/^PATH/ { print $2 }' $ENVFILE`
+NLLP=`awk -F'=' '/^LD_LIBRARY_PATH/ { print $2 }' $ENVFILE`
+
+[ -n "$NP" ] && PATH=$NP:$PATH
+[ -n "$LLP" ] && LD_LIBRARY_PATH=$LLP:$LD_LIBRARY_PATH
+
+export PATH LD_LIBRARY_PATH

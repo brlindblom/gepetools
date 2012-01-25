@@ -1,0 +1,26 @@
+#!/bin/bash
+
+JOBID=$1
+
+if [ -z "$JOBID" ]; then
+	echo "Need a jobid as an argument!"
+	exit 1
+fi
+
+#if [ $UID -ne 0 ]; then
+#    echo "Must run as root! Exiting..."
+#    exit 1
+#fi
+
+for pid in $(ls /proc | egrep '[0-9]+'); do
+	[ -f "/proc/$pid/environ" ] || continue
+    grep -q "JOB_ID=$JOBID" /proc/$pid/environ && pids="$pids,$pid"
+done 
+
+pids=$(echo $pids | sed 's/^\,//g')
+if [ -z "$pids" ]; then
+    echo "No PIDs of job $JOBID live here."
+    exit
+fi
+
+top -n 1 -b -M -p $pids | egrep '^[ ]*[0-9]+[ ]+[a-z0-9]+' | awk '{ printf "%8s %8s %8s %8s %6s %6s %12s  %s\n", $1, $5, $6, $7, $9, $10, $11, $12 }'

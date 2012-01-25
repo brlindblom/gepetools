@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# Start the mpd in a loop. On the master node grep the granted portnumber
+# with mpdtrace -l
+#
+
+if [ -z "$JOB_ID" ]; then
+    echo "mpdbood must be run from inside a job!"
+    exit 1
+fi
+
+export MPD_CON_EXT="sge_$JOB_ID.$SGE_TASK_ID"
+NODE=`hostname | cut -d'.' -f 1`
+
+for host in `cat $TMPDIR/machines.mpich2`; do
+    host=${host%:*}
+    if [ "$host" == "$NODE" ]; then
+        /apps/gridengine/mpich2_mpd/bin/$ARCH/start_mpich2 -n $host `which mpd`
+        actual_retry=1
+        while [ $actual_retry -le $RETRIES ] ; do
+            mpdtrace -l &> /dev/null && break
+            sleep $SLEEPTIME
+            ((actual_retry += 1))
+        done
+        if [ -z "$MASTER" ]; then
+            echo "$me: local mpd could not be started, aborting"
+            exit 0
+        fi
+    
+        PORT=`expr "$MASTER" : ".*_\([0-9]*\)"`
+    else
+        /apps/gridengine/mpich2_mpd/bin/$ARC/start_mpich2 -n $host `which mpd` $NODE $PORT
+    fi
+done
+
+actual_retry=1
+while [ $actual_retry -le $RETRIES ] ; do
+    numhosts=`mpdtrace | wc -l`
+
+    [ $NHOSTS -eq ${numhosts:-0} ] && exit 0
+    sleep $SLEEPTIME
+    ((actual_retry += 1))
+done
