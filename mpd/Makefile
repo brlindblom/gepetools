@@ -41,8 +41,8 @@ SHELL       = /bin/sh
 MAKE        = make
 RM          = rm -f
 SDIR        = ..
-ALL         = start_mpich2
-ALL_OBJS    = start_mpich2.o
+ALL         = start_mpd
+ALL_OBJS    = start_mpd.o
 
 #---------------------------------------------------------------------
 # rules
@@ -53,10 +53,10 @@ clean:
 	$(RM) $(ALL) $(ALL_OBJS)
 
 #---------------------------------------------------------------------
-# starter used in startmpich2.sh
+# starter used in startpe.sh
 #
-start_mpich2: start_mpich2.o
-	$(CC) -o start_mpich2 start_mpich2.o $(LFLAGS) $(LIBS)
+start_mpd: start_mpd.o
+	$(CC) -o start_mpd start_mpd.o $(LFLAGS) $(LIBS)
 
-start_mpich2.o: $(SDIR)/start_mpich2.c
-	$(CC) $(CFLAGS) -c $(SDIR)/start_mpich2.c
+start_mpd.o: $(SDIR)/start_mpd.c
+	$(CC) $(CFLAGS) -c $(SDIR)/start_mpd.c

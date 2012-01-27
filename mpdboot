@@ -15,7 +15,7 @@ NODE=`hostname | cut -d'.' -f 1`
 for host in `cat $TMPDIR/machines.mpich2`; do
     host=${host%:*}
     if [ "$host" == "$NODE" ]; then
-        /apps/gridengine/mpich2_mpd/bin/$ARCH/start_mpich2 -n $host `which mpd`
+        %%INSTALL_DIR%%/mpd/bin/$ARCH/start_mpd -n $host `which mpd`
         actual_retry=1
         while [ $actual_retry -le $RETRIES ] ; do
             mpdtrace -l &> /dev/null && break
@@ -29,7 +29,7 @@ for host in `cat $TMPDIR/machines.mpich2`; do
     
         PORT=`expr "$MASTER" : ".*_\([0-9]*\)"`
     else
-        /apps/gridengine/mpich2_mpd/bin/$ARC/start_mpich2 -n $host `which mpd` $NODE $PORT
+        %%INSTALL_DIR%%/bin/$ARC/start_mpd -n $host `which mpd` $NODE $PORT
     fi
 done
 

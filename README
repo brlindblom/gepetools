@@ -67,47 +67,23 @@ extJobInfo   - How about some friggin' visibility into what your
 
 === Installation ==================================================
 
-This package should be extracted to $SGE_ROOT/gepetools and be
-available, in the same location on every compute node (unless you
-disagree with this decision and want to modify the code, which is
-quite simple).  If your SGE_ROOT is on an NFS mount, you should be
-golden.
+This package can be extracted anywhere by the final installation 
+directory.  Its best if the installation directory is on a shared 
+directory.
 
-Step 1: Create the PEs
+Just run
 
-Use the createpe.sh script to create the defined PEs within the 
-GE configuration.  Each argument specifies an available
-processor-per-node configuration with the base PE, mpi being a 
-simple round-robin allocation rule:
+./INSTALL <install_dir>
 
-# cd $SGE_ROOT/gepetools
-# ./createpe.sh 1 2 4 8 16
-
-This will create the PEs mpi, mpi.1, mpi.2, ..., mpi.16
-
-Step 2: Build the MPICH2 mpdboot wrapper
-
-You can safely skip this step if you have moved past requiring 
-mpds for MPICH2/MVAPICH2/IntelMPI.  If you still have to support
-older versions that are not on the HYDRA process manager, this is
-the best way to acheive tight-integration support.
-
-# cd $SGE_ROOT/gepetools/mpdboot_wrapper
-# ./aimk
-
-If you are using an architecture other than lx26-amd64, you'll want
-to run this same procedure on a node of that architecture and make 
-sure the gepetools directory gets synced to the other nodes of that
-architecture type.
-
-Step 3: Submit a friggin' job already!
+=== Example jobs using the JSV code
+You should be ready to submit jobs...
 
 Examples below:
 
 1. MPICH Example
 
 #$ ... SGE directives ...
-#$ -pe mpi.4 16   # 16 slots, 4 ppn
+#$ -l nodes=4,ppn=4   # 16 slots total, 4 ppn
 #$ ...
 
 # Doesn't everyone use modules?
@@ -120,7 +96,7 @@ mpirun -np $NSLOTS -machinefile $TMPDIR/machines.mpich myexecutable
 2. MPICH2/MVAPICH2 pre-hydra Example
 
 #$ ...
-#$ -pe mpi 32  # 32 slots, round-robin
+#$ -l pcpus=32      # 32 slots, round-robin
 #$ ...
 
 module purge
@@ -133,7 +109,7 @@ mpirun -np $NSLOTS myexecutable
 3. MPICH2/MVAPICH2/IntelMPI w/ Hydra
 
 #$ ...
-#$ -pe mpi.8 64 # 64 slots, 8 ppn
+#$ -l nodes=8,ppn=8 # 64 slots, 8 ppn
 #$ ...
 
 module purge
@@ -145,7 +121,7 @@ mpiexec -n $NSLOTS myexecutable
 4. OpenMPI
 
 #$ ...
-#$ -pe mpi.12 8 # 128 slots, 8 ppn
+#$ -l nodes=8,ppn=12 # 96 slots, 12 ppn
 #$ ...
 
 module purge

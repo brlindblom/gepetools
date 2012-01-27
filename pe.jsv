@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+#
+
+PATH=/bin:/usr/bin
+
+jsv_on_start(){
+    # jsv_send_env
+    return
+}
+
+jsv_on_verify(){
+    do_correct="false"
+
+    ppn=$(jsv_sub_get_param l_hard ppn)
+    cpus=$(jsv_sub_get_param l_hard cpus)
+    nodes=$(jsv_sub_get_param l_hard nodes)
+
+    # check if they have cpus instead
+    if [ -z "$ppn" -o -z "$nodes" ]; then
+        if [ -n "$cpus" -o -n "$cpus_min" -o -n "$cpus_max" ]; then
+            do_correct="true"
+            jsv_set_param pe_name "mpi*"
+            if [ -n "$cpus_min" -a -n "$cpus_max" ]; then
+                jsv_set_param pe_min $cpus_min
+                jsv_set_param pe_min $cpus_max
+            else if [ -n "$cpus" ]; then
+                jsv_set_param pe_min $cpus
+                jsv_set_param pe_max $cpus
+            fi; else
+                jsv_reject "Invalid parallel job configuration specified."
+                return
+            fi
+        else
+            # no valid parallel request found
+            return
+        fi
+    else
+        if [ -n "$ppn" -a -n "$nodes" ]; then
+            jsv_set_param pe_name "mpi*.$ppn"
+            jsv_set param pe_min $((ppn*nodes))
+            jsv_set param pe_max $((ppn*nodes))
+        else
+            jsv_reject "Invalid parallel job configuration specified."
+        fi
+    fi
+            
+    if [ "$do_correct" = "true" ]; then
+        jsv_correct "Job was modified before it was accepted"
+    else
+        jsv_accept "Job is accepted"
+    fi
+    return
+}
+
+. $SGE_ROOT/util/resources/jsv/jsv_include.sh
+
+jsv_main

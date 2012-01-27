@@ -27,8 +27,8 @@ pe_name            mpi
 slots              9999 
 user_lists         NONE
 xuser_lists        NONE
-start_proc_args    $SGE_ROOT/gepetools/startpe.sh \$pe_hostfile
-stop_proc_args     $SGE_ROOT/gepetools/stoppe.sh
+start_proc_args    %%INSTALL_DIR%%/startpe.sh \$pe_hostfile
+stop_proc_args     %%INSTALL_DIR%%/stoppe.sh
 allocation_rule    \$round_robin
 control_slaves     TRUE
 job_is_first_task  FALSE
@@ -51,8 +51,8 @@ pe_name            $pe
 slots              9999
 user_lists         NONE
 xuser_lists        NONE
-start_proc_args    $SGE_ROOT/gepetools/startpe.sh \$pe_hostfile
-stop_proc_args     $SGE_ROOT/gepetools/stoppe.sh
+start_proc_args    %%INSTALL_DIR%%/startpe.sh \$pe_hostfile
+stop_proc_args     %%INSTALL_DIR%%/stoppe.sh
 allocation_rule    $ppn
 control_slaves     TRUE
 job_is_first_task  FALSE

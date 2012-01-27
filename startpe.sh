@@ -52,10 +52,10 @@ PeHostfile2MPICHMachineFile $pe_hostfile >> $TMPDIR/machines.hpmpi
 PeHostfile2MPICH2MachineFile $pe_hostfile >> $TMPDIR/machines.intelmpi
 
 
-ln -s /apps/gridengine/mpdboot $TMPDIR/mpdboot
+ln -s %%INSTALL_DIR%%/mpdboot $TMPDIR/mpdboot
 
 # Make script wrapper for 'rsh' available in jobs tmp dir
-rsh_wrapper=/apps/gridengine/mpi/rsh
+rsh_wrapper=%%INSTALL_DIR%%/rsh
 if [ ! -x $rsh_wrapper ]; then
    echo "$me: can't execute $rsh_wrapper" >&2
    echo "     maybe it resides at a file system not available at this machine" >&2

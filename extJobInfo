@@ -8,9 +8,9 @@ function extJobInfoLoop(){
             counter=0
         fi
         if [ -n "$pidName" ]; then
-            sudo $SGE_ROOT/gepetools/getjidprocinfo $JOB_ID | grep $pidName >> ${JOB_NAME}.${JOB_ID}.extJobInfo
+            sudo %%INSTALL_DIR%%/getjidprocinfo $JOB_ID | grep $pidName >> ${JOB_NAME}.${JOB_ID}.extJobInfo
         else
-            sudo $SGE_ROOT/gepetools/getjidprocinfo $JOB_ID >> ${JOB_NAME}.${JOB_ID}.extJobInfo
+            sudo %%INSTALL_DIR%%/getjidprocinfo $JOB_ID >> ${JOB_NAME}.${JOB_ID}.extJobInfo
         fi 
         counter=$((counter+1))
         sleep 1

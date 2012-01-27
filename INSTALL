@@ -1,0 +1,100 @@
+#!/bin/bash
+#
+# Install script
+#
+
+# add our PEs
+function pe_exists(){
+    qconf -spl 2>&1 | grep -q '^mpi$'
+    return $?
+}
+
+export installDir=$1
+
+mkdir -p $installDir
+ppns=( 1 2 4 6 8 12 16 )
+
+if pe_exists mpi; then
+    echo "PE 'mpi' already exists! Bailing..."
+    exit 1
+fi
+
+for queue in $(qconf -sql); do
+
+    cat >/tmp/pefile.$$ <<EOF
+pe_name            mpi_$queue
+slots              9999 
+user_lists         NONE
+xuser_lists        NONE
+start_proc_args    %%INSTALL_DIR%%/startpe.sh \$pe_hostfile
+stop_proc_args     %%INSTALL_DIR%%/stoppe.sh
+allocation_rule    \$round_robin
+control_slaves     TRUE
+job_is_first_task  FALSE
+urgency_slots      min
+accounting_summary FALSE
+EOF
+    sed -i "s|%%INSTALL_DIR%%|$installDir|g" /tmp/pefile.$$ 
+    qconf -Ap /tmp/pefile.$$
+    qconf -mattr queue pe_list mpi_$queue $queue
+done
+
+for queue in $(qconf -sql); do
+    for ppn in ${ppns[@]}; do
+        pe=mpi_$queue.$ppn
+   
+        if pe_exists $pe; then
+            echo "PE '$pe' already exists! Bailing..."
+            rm -f /tmp/pefile.$$
+            exit 1
+        fi
+
+        cat >/tmp/pefile.$$ <<EOF
+pe_name            $pe
+slots              9999
+user_lists         NONE
+xuser_lists        NONE
+start_proc_args    %%INSTALL_DIR%%/startpe.sh \$pe_hostfile
+stop_proc_args     %%INSTALL_DIR%%/stoppe.sh
+allocation_rule    $ppn
+control_slaves     TRUE
+job_is_first_task  FALSE
+urgency_slots      min
+accounting_summary FALSE
+EOF
+        sed -i "s|%%INSTALL_DIR%%|$installDir|g" /tmp/pefile.$$ 
+        qconf -Ap /tmp/pefile.$$
+        qconf -mattr queue pe_list $pe $queue
+    done
+done
+
+rm -f /tmp/pefile.$$
+
+install --owner=root --group=root --mode=755 startpe.sh $installDir/
+sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/startpe.sh
+install --owner=root --group=root --mode=755 stoppe.sh $installDir/
+sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/stoppe.sh
+install --owner=root --group=root --mode=755 getjidprocinfo $installDir/
+sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/getjidprocinfo
+install --owner=root --group=root --mode=755 extJobInfo $installDir/
+sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/extJobInfo
+install --owner=root --group=root --mode=755 rsh $installDir/
+install --owner=root --group=root --mode=755 pe.jsv $installDir/
+install --owner=root --group=root --mode=644 pe_env_setup $installDir/
+sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/pe_env_setup
+
+# Setup MPD daemon
+rsync -a mpd $installDir/
+pushd $installDir/mpd
+./aimk
+popd
+
+# Add complex attributes
+qconf -sc /tmp/complexAttribs.$$
+cat >>/tmp/complexAttribs.$$ <<EOF
+cpus                             cpus                          INT         ==      YES         NO         0        0
+nodes                            nodes                         INT         ==      YES         NO         0        0
+ppn                              ppn                           INT         ==      YES         NO         0        0
+EOF
+qconf -Mc /tmp/complexAttribs.$$
+rm -f  /tmp/complexAttribs.$$
