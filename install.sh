@@ -5,24 +5,24 @@
 
 # add our PEs
 function pe_exists(){
-    qconf -spl 2>&1 | grep -q '^mpi$'
+    qconf -spl 2>&1 | grep -q "^$1\$"
     return $?
 }
 
 export installDir=$1
+export QUEUE_PREFIX=gepetools
 
 mkdir -p $installDir
 ppns=( 1 2 4 6 8 12 16 )
 
-if pe_exists mpi; then
-    echo "PE 'mpi' already exists! Bailing..."
-    exit 1
-fi
-
 for queue in $(qconf -sql); do
+    if pe_exists ${QUEUE_PREFIX}_{queue}; then
+        echo "PE '${QUEUE_PREFIX}_${queue}' already exists! Bailing..."
+        exit 1
+    fi
 
     cat >/tmp/pefile.$$ <<EOF
-pe_name            mpi_$queue
+pe_name            ${QUEUE_PREFIX}_${queue}
 slots              9999 
 user_lists         NONE
 xuser_lists        NONE
@@ -36,12 +36,12 @@ accounting_summary FALSE
 EOF
     sed -i "s|%%INSTALL_DIR%%|$installDir|g" /tmp/pefile.$$ 
     qconf -Ap /tmp/pefile.$$
-    qconf -mattr queue pe_list mpi_$queue $queue
+    qconf -mattr queue pe_list ${QUEUE_PREFIX}_$queue $queue
 done
 
 for queue in $(qconf -sql); do
     for ppn in ${ppns[@]}; do
-        pe=mpi_$queue.$ppn
+        pe=${QUEUE_PREFIX}_${queue}.${ppn}
    
         if pe_exists $pe; then
             echo "PE '$pe' already exists! Bailing..."
@@ -80,6 +80,8 @@ sudo install --owner=root --group=root --mode=755 getjidprocinfo $installDir/
 sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/getjidprocinfo
 sudo install --owner=root --group=root --mode=755 extJobInfo $installDir/
 sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/extJobInfo
+sudo install --owner=root --group=root --mode=755 mpdboot $installDir/
+sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/mpdboot
 sudo install --owner=root --group=root --mode=755 rsh $installDir/
 sudo install --owner=root --group=root --mode=755 pe.jsv $installDir/
 sudo install --owner=root --group=root --mode=644 pe_env_setup $installDir/
@@ -94,9 +96,18 @@ popd
 # Add complex attributes
 qconf -sc /tmp/complexAttribs.$$
 cat >>/tmp/complexAttribs.$$ <<EOF
-pcpus                            pcpus                         INT         ==      YES         NO         0        0
-nodes                            nodes                         INT         ==      YES         NO         0        0
-ppn                              ppn                           INT         ==      YES         NO         0        0
+pcpus                            pcpus                         INT         <=      YES         NO         0        0
+nodes                            nodes                         INT         <=      YES         NO         0        0
+ppn                              ppn                           INT         <=      YES         NO         0        0
 EOF
 qconf -Mc /tmp/complexAttribs.$$
 rm -f  /tmp/complexAttribs.$$
+
+# Add complex values to queues
+for queue in $(qconf -sql); do
+    qconf -mattr queue complex_values pcpus=99999 $queue
+    qconf -mattr queue complex_values nodes=99999 $queue
+    qconf -mattr queue complex_values ppn=99999 $queue
+done
+
+exit
