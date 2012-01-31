@@ -73,7 +73,7 @@ directory.
 
 Just run
 
-./INSTALL <install_dir>
+./install.sh <install_dir>
 
 === Example jobs using the JSV code
 You should be ready to submit jobs...

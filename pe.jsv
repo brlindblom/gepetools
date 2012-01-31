@@ -20,7 +20,7 @@ jsv_on_verify(){
     if [ -z "$ppn" -o -z "$nodes" ]; then
         if [ -n "$cpus" -o -n "$cpus_min" -o -n "$cpus_max" ]; then
             do_correct="true"
-            jsv_set_param pe_name "mpi*"
+            jsv_set_param pe_name "gepetools_*"
             if [ -n "$cpus_min" -a -n "$cpus_max" ]; then
                 jsv_set_param pe_min $cpus_min
                 jsv_set_param pe_min $cpus_max
@@ -37,9 +37,9 @@ jsv_on_verify(){
         fi
     else
         if [ -n "$ppn" -a -n "$nodes" ]; then
-            jsv_set_param pe_name "mpi*.$ppn"
-            jsv_set param pe_min $((ppn*nodes))
-            jsv_set param pe_max $((ppn*nodes))
+            jsv_set_param pe_name "gepetools_*.$ppn"
+            jsv_set_param pe_min $((ppn*nodes))
+            jsv_set_param pe_max $((ppn*nodes))
         else
             jsv_reject "Invalid parallel job configuration specified."
         fi

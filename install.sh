@@ -12,7 +12,9 @@ function pe_exists(){
 export installDir=$1
 export QUEUE_PREFIX=gepetools
 
-mkdir -p $installDir
+echo "You should have root privs for this.  Hope you're in sudoers..."
+sudo mkdir -p $installDir
+sudo chmod 755 $installDir
 ppns=( 1 2 4 6 8 12 16 )
 
 for queue in $(qconf -sql); do
@@ -86,15 +88,16 @@ sudo install --owner=root --group=root --mode=755 rsh $installDir/
 sudo install --owner=root --group=root --mode=755 pe.jsv $installDir/
 sudo install --owner=root --group=root --mode=644 pe_env_setup $installDir/
 sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/pe_env_setup
+sudo touch $installDir/.gepetools.install
 
 # Setup MPD daemon
-rsync -a mpd $installDir/
+sudo rsync -a mpd $installDir/
 pushd $installDir/mpd
 sudo ./aimk
 popd
 
 # Add complex attributes
-qconf -sc /tmp/complexAttribs.$$
+qconf -sc >> /tmp/complexAttribs.$$
 cat >>/tmp/complexAttribs.$$ <<EOF
 pcpus                            pcpus                         INT         <=      YES         NO         0        0
 nodes                            nodes                         INT         <=      YES         NO         0        0
