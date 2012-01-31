@@ -12,6 +12,12 @@ function pe_exists(){
 export installDir=$1
 export QUEUE_PREFIX=gepetools
 
+if [ -z "$installDir" ]; then
+    echo "Please specify an installation directory: "
+    echo "./install.sh <installation_dir>"
+    exit 1
+fi
+
 echo "You should have root privs for this.  Hope you're in sudoers..."
 sudo mkdir -p $installDir
 sudo chmod 755 $installDir
