@@ -37,15 +37,11 @@
 # shutdown of MPI conforming with the Grid Engine
 # Parallel Environment interface
 #
-# Just remove machine-file that was written by startmpi.sh
+# Just remove machine-file that was written by startpe.sh
 #
-rm $TMPDIR/machines*
 
-rshcmd=rsh
-case "$ARC" in
-   hp|hp10|hp11|hp11-64) rshcmd=remsh ;;
-   *) ;;
-esac
-rm $TMPDIR/$rshcmd
+rm -f $TMPDIR/machines*
+rm -f $TMPDIR/rsh
+rm -f $TMPDIR/mpdboot
 
 exit 0
