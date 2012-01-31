@@ -28,20 +28,22 @@ jsv_on_verify(){
     do_correct="false"
 
     ppn=$(jsv_sub_get_param l_hard ppn)
-    cpus=$(jsv_sub_get_param l_hard cpus)
+    pcpus=$(jsv_sub_get_param l_hard pcpus)
+    pcpus_min=$(jsv_sub_get_param l_hard pcpus_min)
+    pcpus_max=$(jsv_sub_get_param l_hard pcpus_max)
     nodes=$(jsv_sub_get_param l_hard nodes)
 
     # check if they have cpus instead
     if [ -z "$ppn" -o -z "$nodes" ]; then
-        if [ -n "$cpus" -o -n "$cpus_min" -o -n "$cpus_max" ]; then
+        if [ -n "$pcpus" -o -n "$pcpus_min" -o -n "$pcpus_max" ]; then
             do_correct="true"
             jsv_set_param pe_name "gepetools_*"
-            if [ -n "$cpus_min" -a -n "$cpus_max" ]; then
-                jsv_set_param pe_min $cpus_min
-                jsv_set_param pe_min $cpus_max
-            elif [ -n "$cpus" ]; then
-                jsv_set_param pe_min $cpus
-                jsv_set_param pe_max $cpus
+            if [ -n "$pcpus_min" -a -n "$pcpus_max" ]; then
+                jsv_set_param pe_min $pcpus_min
+                jsv_set_param pe_min $pcpus_max
+            elif [ -n "$pcpus" ]; then
+                jsv_set_param pe_min $pcpus
+                jsv_set_param pe_max $pcpus
             else
                 jsv_reject "Invalid parallel job configuration specified."
                 return
