@@ -129,3 +129,18 @@ module add mpi/openmpi/1.4.4
 
 mpirun myexecutable
 ###
+
+5. LAM
+
+#$ ...
+#$ -l nodes=2,ppn=4
+#$ ...
+
+module purge
+module add mpi/lam/7.1.4
+
+lamboot $TMPDIR/machines.lam
+lamnodes
+mpirun -np $NSLOTS myexecutable
+lamclean
+###

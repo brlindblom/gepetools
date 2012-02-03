@@ -52,6 +52,14 @@ PeHostfile2MPICH2(){
     done
 }
 
+PeHostfile2LAMbootSchema(){
+    cat $1 | while read line; do
+        host=`echo $line|cut -f1 -d" "|cut -f1 -d"."`
+        nslots=`echo $line|cut -f2 -d" "`
+        echo "$host cpu=$nslots"
+    done
+}
+
 PeHostfile2Linda(){
     local machines
     while read line; do
@@ -92,6 +100,7 @@ PeHostfile2MPICH2 $pe_hostfile >> $TMPDIR/machines.mpich2
 PeHostfile2MPICH $pe_hostfile >> $TMPDIR/machines.hpmpi
 PeHostfile2MPICH2 $pe_hostfile >> $TMPDIR/machines.intelmpi
 PeHostfile2Linda $pe_hostfile >> $TMPDIR/machines.intelmpi
+PeHostfile2LAMbootSchema $pe_hostfile >> $TMPDIR/machines.lam
 
 mpd_wrapper=%%INSTALL_DIR%%/mpdboot
 if [ ! -x $mpd_wrapper ]; then
