@@ -99,7 +99,7 @@ PeHostfile2MPICH $pe_hostfile >> $TMPDIR/machines.mvapich2
 PeHostfile2MPICH2 $pe_hostfile >> $TMPDIR/machines.mpich2
 PeHostfile2MPICH $pe_hostfile >> $TMPDIR/machines.hpmpi
 PeHostfile2MPICH2 $pe_hostfile >> $TMPDIR/machines.intelmpi
-PeHostfile2Linda $pe_hostfile >> $TMPDIR/machines.intelmpi
+PeHostfile2Linda $pe_hostfile >> $TMPDIR/machines.linda
 PeHostfile2LAMbootSchema $pe_hostfile >> $TMPDIR/machines.lam
 
 mpd_wrapper=%%INSTALL_DIR%%/mpdboot
