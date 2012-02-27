@@ -1,0 +1,7 @@
+#!/bin/bash
+
+source %%INSTALL_DIR%%/extJobInfo
+extJobInfoLoop &
+$@
+extJobInfoCleanup
+

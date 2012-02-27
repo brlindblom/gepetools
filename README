@@ -12,6 +12,12 @@ impementations:
  * MPICH/MPICH2
  * LAM/MPI
 
+Supported applications that use MPI but have their own methods of 
+executing parallel jobs:
+
+ * ANSYS 13
+ * Comsol 4.x
+
 Other non-MPI message-passing/memory-sharing implementations that
 will be supported include
 
@@ -90,7 +96,7 @@ Examples below:
 module purge
 module add mpi/mpich/1.2.7
 
-mpirun -np $NSLOTS -machinefile $TMPDIR/machines.mpich myexecutable
+mpirun -np $NSLOTS -machinefile $MPICH_HOSTS myexecutable
 ###
 
 2. MPICH2/MVAPICH2 pre-hydra Example
@@ -139,7 +145,7 @@ mpirun myexecutable
 module purge
 module add mpi/lam/7.1.4
 
-lamboot $TMPDIR/machines.lam
+lamboot $LAM_HOSTS
 lamnodes
 mpirun -np $NSLOTS myexecutable
 lamclean

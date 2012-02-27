@@ -8,9 +8,9 @@ function extJobInfoLoop(){
             counter=0
         fi
         if [ -n "$pidName" ]; then
-            /apps/gepetools/getjidprocinfo $JOB_ID | grep $pidName >> ${JOB_NAME}.${JOB_ID}.extJobInfo
+            %%INSTALL_DIR%%/getjidprocinfo $JOB_ID | grep $pidName >> ${JOB_NAME}.${JOB_ID}.extJobInfo.$(hostname)
         else
-            /apps/gepetools/getjidprocinfo $JOB_ID >> ${JOB_NAME}.${JOB_ID}.extJobInfo
+            %%INSTALL_DIR%%/getjidprocinfo $JOB_ID >> ${JOB_NAME}.${JOB_ID}.extJobInfo.$(hostname)
         fi 
         counter=$((counter+1))
         sleep 1
@@ -20,3 +20,12 @@ function extJobInfoLoop(){
 function extJobInfoCleanup(){
     jobs -rl | awk '/extJobInfoLoop/ { print $2 }' | xargs kill
 }
+
+# Override RSH to wrap our tasks in an
+# extJobInfoLoop on each node
+
+if [ -f $TMPDIR/rsh ]; then
+    mv $TMPDIR/rsh $TMPDIR/rsh_main
+    ln -s %%INSTALL_DIR%%/rshExtWrap $TMPDIR/rsh
+    ln -s %%INSTALL_DIR%%/rshExtWrap $TMPDIR/qrsh
+fi

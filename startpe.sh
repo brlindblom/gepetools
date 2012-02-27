@@ -30,6 +30,7 @@ PeHostfile2MPICH2MachineFile(){
 }
 
 PeHostfile2Ansys(){
+    local machines
     local_host=`hostname`
     num_local_host=`grep $local_host $1 | awk '{print $2}'`
     machines="$local_host:$num_local_host"
@@ -39,6 +40,28 @@ PeHostfile2Ansys(){
         machines="$machines:$host:$num_procs"
     done
     echo $machines
+}
+
+PeHostfile2Linda(){
+    local machines
+    while read line; do
+        host=`echo $line|cut -f1 -d" "|cut -f1 -d"."`
+        nslots=`echo $line|cut -f2 -d" "`
+        if [ -n "$machines" ]; then
+            machines="$machines,$host:$nslots"
+        else
+            machines="$host:$nslots"
+        fi
+    done < $1
+    echo $machines
+}
+
+PeHostfile2LAMbootSchema(){
+    cat $1 | while read line; do
+        host=`echo $line|cut -f1 -d" "|cut -f1 -d"."`
+        nslots=`echo $line|cut -f2 -d" "`
+        echo "$host cpu=$nslots"
+    done
 }
 
 # parse options
@@ -68,13 +91,14 @@ PeHostfile2MPICHMachineFile $pe_hostfile >> $TMPDIR/machines.mvapich2
 PeHostfile2MPICH2MachineFile $pe_hostfile >> $TMPDIR/machines.mpich2
 PeHostfile2MPICHMachineFile $pe_hostfile >> $TMPDIR/machines.hpmpi
 PeHostfile2MPICH2MachineFile $pe_hostfile >> $TMPDIR/machines.intelmpi
+PeHostfile2LAMbootSchema $pe_hostfile >> $TMPDIR/machines.lam
+PeHostfile2Linda $pe_hostfile >> $TMPDIR/machines.linda
 PeHostfile2Ansys $pe_hostfile >> $TMPDIR/machines.ansys
 
-
-ln -s /apps/gepetools/mpdboot $TMPDIR/mpdboot
+ln -s %%INSTALL_DIR%%/mpdboot $TMPDIR/mpdboot
 
 # Make script wrapper for 'rsh' available in jobs tmp dir
-rsh_wrapper=/apps/gepetools/rsh
+rsh_wrapper=%%INSTALL_DIR%%/rsh
 if [ ! -x $rsh_wrapper ]; then
    echo "$me: can't execute $rsh_wrapper" >&2
    echo "     maybe it resides at a file system not available at this machine" >&2

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+ARGS="$1"
+shift
+exec $TMPDIR/rsh_main $ARGS %%INSTALL_DIR%%/rshExtJobInfo $@

@@ -37,7 +37,7 @@ fi
 echo "You should have root privs for this.  Hope you're in sudoers..."
 sudo mkdir -p $installDir
 sudo chmod 755 $installDir
-ppns=( 1 2 4 6 8 12 16 )
+ppns=( 1 2 3 4 5 6 8 10 12 16 24 32 )
 
 for queue in $(qconf -sql); do
     if pe_exists ${QUEUE_PREFIX}_{queue}; then
@@ -98,18 +98,32 @@ echo "You should have root privs for this next part.  Hope you're in sudoers..."
 
 sudo install --owner=root --group=root --mode=755 startpe.sh $installDir/
 sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/startpe.sh
+
 sudo install --owner=root --group=root --mode=755 stoppe.sh $installDir/
 sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/stoppe.sh
+
 sudo install --owner=root --group=root --mode=755 getjidprocinfo $installDir/
 sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/getjidprocinfo
+
 sudo install --owner=root --group=root --mode=755 extJobInfo $installDir/
 sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/extJobInfo
+
+sudo install --owner=root --group=root --mode=755 rshExtJobInfo $installDir/
+sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/rshExtJobInfo
+
+sudo install --owner=root --group=root --mode=755 rshExtWrap $installDir/
+sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/rshExtWrap
+
 sudo install --owner=root --group=root --mode=755 mpdboot $installDir/
 sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/mpdboot
+
 sudo install --owner=root --group=root --mode=755 rsh $installDir/
+
 sudo install --owner=root --group=root --mode=755 pe.jsv $installDir/
+
 sudo install --owner=root --group=root --mode=644 pe_env_setup $installDir/
 sudo sed -i "s|%%INSTALL_DIR%%|$installDir|g" $installDir/pe_env_setup
+
 sudo touch $installDir/.gepetools.install
 
 # Setup MPD daemon
