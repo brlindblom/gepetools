@@ -52,7 +52,7 @@ user_lists         NONE
 xuser_lists        NONE
 start_proc_args    %%INSTALL_DIR%%/startpe.sh \$pe_hostfile
 stop_proc_args     %%INSTALL_DIR%%/stoppe.sh
-allocation_rule    \$round_robin
+allocation_rule    \$fill_up
 control_slaves     TRUE
 job_is_first_task  FALSE
 urgency_slots      min
