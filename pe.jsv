@@ -20,56 +20,56 @@
 PATH=/bin:/usr/bin
 
 jsv_on_start(){
-    # jsv_send_env
-    return
+  # jsv_send_env
+  return
 }
 
 jsv_on_verify(){
-    do_correct="false"
+  do_correct="false"
 
-    ppn=$(jsv_sub_get_param l_hard ppn)
-    pcpus=$(jsv_sub_get_param l_hard pcpus)
-    pcpus_min=$(jsv_sub_get_param l_hard pcpus_min)
-    pcpus_max=$(jsv_sub_get_param l_hard pcpus_max)
-    nodes=$(jsv_sub_get_param l_hard nodes)
+  ppn=$(jsv_sub_get_param l_hard ppn)
+  pcpus=$(jsv_sub_get_param l_hard pcpus)
+  pcpus_min=$(jsv_sub_get_param l_hard pcpus_min)
+  pcpus_max=$(jsv_sub_get_param l_hard pcpus_max)
+  nodes=$(jsv_sub_get_param l_hard nodes)
 
-    # check if they have cpus instead
-    if [ -z "$ppn" -o -z "$nodes" ]; then
-        if [ -n "$pcpus" -o -n "$pcpus_min" -o -n "$pcpus_max" ]; then
-            do_correct="true"
-            jsv_set_param pe_name "gepetools_*"
-            if [ -n "$pcpus_min" -a -n "$pcpus_max" ]; then
-                jsv_set_param pe_min $pcpus_min
-                jsv_set_param pe_min $pcpus_max
-            elif [ -n "$pcpus" ]; then
-                jsv_set_param pe_min $pcpus
-                jsv_set_param pe_max $pcpus
-            else
-                jsv_reject "Invalid parallel job configuration specified."
-                return
-            fi
-        else
-            # no valid parallel request found
-            return
-        fi
+  # check if they have cpus instead
+  if [[ -z "$ppn" -o -z "$nodes" ]]; then
+    if [[ -n "$pcpus" -o -n "$pcpus_min" -o -n "$pcpus_max" ]]; then
+      do_correct="true"
+      jsv_set_param pe_name "gepetools_*"
+      if [[ -n "$pcpus_min" -a -n "$pcpus_max" ]]; then
+        jsv_set_param pe_min $pcpus_min
+        jsv_set_param pe_min $pcpus_max
+      elif [[ -n "$pcpus" ]]; then
+        jsv_set_param pe_min $pcpus
+        jsv_set_param pe_max $pcpus
+      else
+        jsv_reject "Invalid parallel job configuration specified."
+        return
+      fi
     else
-        if [ -n "$ppn" -a -n "$nodes" ]; then
-            jsv_set_param pe_name "gepetools_*.$ppn"
-            jsv_set_param pe_min $((ppn*nodes))
-            jsv_set_param pe_max $((ppn*nodes))
-        else
-            jsv_reject "Invalid parallel job configuration specified."
-        fi
+      # no valid parallel request found
+      return
     fi
-            
-    if [ "$do_correct" = "true" ]; then
-        jsv_correct "Job was modified before it was accepted"
+  else
+    if [[ -n "$ppn" -a -n "$nodes" ]]; then
+      jsv_set_param pe_name "gepetools_*.${ppn}"
+      jsv_set_param pe_min $((ppn*nodes))
+      jsv_set_param pe_max $((ppn*nodes))
     else
-        jsv_accept "Job is accepted"
+      jsv_reject "Invalid parallel job configuration specified."
     fi
-    return
+  fi
+      
+  if [[ "$do_correct" = "true" ]]; then
+    jsv_correct "Job was modified before it was accepted"
+  else
+    jsv_accept "Job is accepted"
+  fi
+  return
 }
 
-. $SGE_ROOT/util/resources/jsv/jsv_include.sh
+source $SGE_ROOT/util/resources/jsv/jsv_include.sh
 
 jsv_main

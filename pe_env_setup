@@ -1,20 +1,4 @@
 #
-# Copyright 2012, Brian Smith
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Sets up environment for qlogin parallel job
 # since SGE can't/wont do this for us
 #
@@ -23,22 +7,12 @@ JOB=$(ps -p $PPID -o cmd= | awk '{ print $1 }' | cut -d'-' -f2)
 
 ENVFILE=/var/spool/gridengine/$(hostname -s)/active_jobs/${JOB}.1/environment
 
-OIFS=$IFS
-IFS=`echo -ne '\n\r'`
+eval $(egrep -v "^(PATH|LD_LIBRARY_PATH|DISPLAY)" $ENVFILE | sed 's/^/export /g')
 
-for i in `cat $ENVFILE`; do
-    echo $i | grep ^PATH &> /dev/null && continue
-    echo $i | grep ^LD_LIBRARY_PATH &> /dev/null && continue
-    echo $i | grep ^DISPLAY &> /dev/null && continue
-    export $i
-done
+NP=$(awk -F'=' '/^PATH/ { print $2 }' $ENVFILE)
+NLLP=$(awk -F'=' '/^LD_LIBRARY_PATH/ { print $2 }' $ENVFILE)
 
-IFS=$OIFS
-
-NP=`awk -F'=' '/^PATH/ { print $2 }' $ENVFILE`
-NLLP=`awk -F'=' '/^LD_LIBRARY_PATH/ { print $2 }' $ENVFILE`
-
-[ -n "$NP" ] && PATH=$NP:$PATH
-[ -n "$LLP" ] && LD_LIBRARY_PATH=$LLP:$LD_LIBRARY_PATH
+[[ -n "$NP" ]] && PATH=$NP:$PATH
+[[ -n "$LLP" ]] && LD_LIBRARY_PATH=$LLP:$LD_LIBRARY_PATH
 
 export PATH LD_LIBRARY_PATH

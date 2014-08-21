@@ -21,17 +21,17 @@
 
 # add our PEs
 function pe_exists(){
-    qconf -spl 2>&1 | grep -q "^$1\$"
-    return $?
+  qconf -spl 2>&1 | grep -q "^$1\$"
+  return $?
 }
 
 export installDir=$1
 export QUEUE_PREFIX=gepetools
 
-if [ -z "$installDir" ]; then
-    echo "Please specify an installation directory: "
-    echo "./install.sh <installation_dir>"
-    exit 1
+if [[ -z "$installDir" ]]; then
+  echo "Please specify an installation directory: "
+  echo "./install.sh <installation_dir>"
+  exit 1
 fi
 
 echo "You should have root privs for this.  Hope you're in sudoers..."
@@ -40,56 +40,54 @@ sudo chmod 755 $installDir
 ppns=( 1 2 3 4 5 6 8 10 12 16 24 32 )
 
 for queue in $(qconf -sql); do
-    if pe_exists ${QUEUE_PREFIX}_{queue}; then
-        echo "PE '${QUEUE_PREFIX}_${queue}' already exists! Bailing..."
-        exit 1
-    fi
+  if pe_exists ${QUEUE_PREFIX}_${queue}; then
+    echo "PE '${QUEUE_PREFIX}_${queue}' already exists! Bailing..."
+    exit 1
+  fi
 
-    cat >/tmp/pefile.$$ <<EOF
-pe_name            ${QUEUE_PREFIX}_${queue}
-slots              9999 
-user_lists         NONE
-xuser_lists        NONE
+  sed "s|%%INSTALL_DIR%%|$installDir|g" > /tmp/pefile.$$ <<EOF
+pe_name        ${QUEUE_PREFIX}_${queue}
+slots        9999 
+user_lists       NONE
+xuser_lists      NONE
 start_proc_args    %%INSTALL_DIR%%/startpe.sh \$pe_hostfile
 stop_proc_args     %%INSTALL_DIR%%/stoppe.sh
 allocation_rule    \$fill_up
 control_slaves     TRUE
 job_is_first_task  FALSE
-urgency_slots      min
+urgency_slots    min
 accounting_summary FALSE
 EOF
-    sed -i "s|%%INSTALL_DIR%%|$installDir|g" /tmp/pefile.$$ 
-    qconf -Ap /tmp/pefile.$$
-    qconf -mattr queue pe_list ${QUEUE_PREFIX}_$queue $queue
+  qconf -Ap /tmp/pefile.$$
+  qconf -mattr queue pe_list ${QUEUE_PREFIX}_${queue} $queue
 done
 
 for queue in $(qconf -sql); do
-    for ppn in ${ppns[@]}; do
-        pe=${QUEUE_PREFIX}_${queue}.${ppn}
+  for ppn in ${ppns[@]}; do
+    pe=${QUEUE_PREFIX}_${queue}.${ppn}
    
-        if pe_exists $pe; then
-            echo "PE '$pe' already exists! Bailing..."
-            rm -f /tmp/pefile.$$
-            exit 1
-        fi
+    if pe_exists $pe; then
+      echo "PE '$pe' already exists! Bailing..."
+      rm -f /tmp/pefile.$$
+      exit 1
+    fi
 
-        cat >/tmp/pefile.$$ <<EOF
-pe_name            $pe
-slots              9999
-user_lists         NONE
-xuser_lists        NONE
+    sed "s|%%INSTALL_DIR%%|$installDir|g" >/tmp/pefile.$$ <<EOF
+pe_name        $pe
+slots        9999
+user_lists       NONE
+xuser_lists      NONE
 start_proc_args    %%INSTALL_DIR%%/startpe.sh \$pe_hostfile
 stop_proc_args     %%INSTALL_DIR%%/stoppe.sh
 allocation_rule    $ppn
 control_slaves     TRUE
 job_is_first_task  FALSE
-urgency_slots      min
+urgency_slots    min
 accounting_summary FALSE
 EOF
-        sed -i "s|%%INSTALL_DIR%%|$installDir|g" /tmp/pefile.$$ 
-        qconf -Ap /tmp/pefile.$$
-        qconf -mattr queue pe_list $pe $queue
-    done
+    qconf -Ap /tmp/pefile.$$
+    qconf -mattr queue pe_list $pe $queue
+  done
 done
 
 rm -f /tmp/pefile.$$
@@ -135,18 +133,19 @@ popd
 # Add complex attributes
 qconf -sc >> /tmp/complexAttribs.$$
 cat >>/tmp/complexAttribs.$$ <<EOF
-pcpus                            pcpus                         INT         <=      YES         NO         0        0
-nodes                            nodes                         INT         <=      YES         NO         0        0
-ppn                              ppn                           INT         <=      YES         NO         0        0
+pcpus              pcpus               INT       <=    YES       NO     0      0
+nodes              nodes               INT       <=    YES       NO     0      0
+ppn                ppn                 INT       <=    YES       NO     0      0
 EOF
 qconf -Mc /tmp/complexAttribs.$$
 rm -f  /tmp/complexAttribs.$$
 
 # Add complex values to queues
+# TODO: Change this to global host configuration
 for queue in $(qconf -sql); do
-    qconf -mattr queue complex_values pcpus=99999 $queue
-    qconf -mattr queue complex_values nodes=99999 $queue
-    qconf -mattr queue complex_values ppn=99999 $queue
+  qconf -mattr queue complex_values pcpus=99999 $queue
+  qconf -mattr queue complex_values nodes=99999 $queue
+  qconf -mattr queue complex_values ppn=99999 $queue
 done
 
 exit
